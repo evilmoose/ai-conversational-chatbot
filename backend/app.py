@@ -2,9 +2,11 @@ from flask import Flask
 from routes.auth_routes import auth_routes
 from routes.chat_routes import chat_routes
 from flask_cors import CORS
+from utils.db_utils import connect_db
 
 app = Flask(__name__)
 CORS(app)
+
 
 # Register blueprints
 app.register_blueprint(auth_routes, url_prefix='/auth')
