@@ -6,7 +6,7 @@ import Register from './pages/Register';
 import Login from './pages/Login';
 import Chat from './pages/Chat';
 import './App.css';
-import './portal.css';
+import './styles.css';
 
 function App() {
   //const [count, setCount] = useState(0)
