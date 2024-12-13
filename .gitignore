@@ -24,6 +24,7 @@
 /frontend/*.njsproj
 /frontend/*.sln
 /frontend/*.sw?
+/frontend/src/styles.css
 
 /backend/.venv
 /backend/.env
