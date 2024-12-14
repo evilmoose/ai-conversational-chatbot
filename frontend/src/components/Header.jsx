@@ -12,7 +12,7 @@ const Header = () => {
 
   return(
     <header className="d-flex align-items-center px-3 py-2 border-bottom">
-      <h2 className="me-auto">Rebecca&apos;s Chat</h2>
+      <h2 className="me-auto">Rebecca</h2>
       <button id="dark-mode-toggle" className="btn btn-secondary me-2">Toggle Dark Mode</button>
       <button id="logout-button" className="btn btn-outline-danger" onClick={handleLogout}>Logout</button>
       <button 

@@ -2,10 +2,12 @@
 
 This project demonstrates a scalable application integrating Flask, React, Redux, and Three.js, with PostgreSQL as the database and a well-structured code organization for maintainability and scalability.
 
+![UI](image.png)
 ---
 
 ## Table of Contents
 - [Flask, React, Redux, and Three.js Integration Example](#flask-react-redux-and-threejs-integration-example)
+  - [](#)
   - [Table of Contents](#table-of-contents)
   - [File Structure](#file-structure)
   - [Setup Instructions](#setup-instructions)
