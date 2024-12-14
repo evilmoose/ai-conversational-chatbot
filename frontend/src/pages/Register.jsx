@@ -1,21 +1,33 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
   const [form, setForm] = useState({ username: '', password: '', confirmPassword: '' });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
       alert('Passwords do not match!');
       return;
     }
-    // Submit data to backend
-    console.log('Registering:', form);
+    const resposne = await fetch('/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    const data = await resposne.json();
+    if (resposne.ok) {
+      navigate('/login');
+    } else {
+      alert(data.message);
+    }
   };
 
   return (

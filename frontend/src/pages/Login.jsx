@@ -1,17 +1,29 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
   const [form, setForm] = useState({ username: '', password: '' });
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Submit login data to backend
-    console.log('Logging in:', form);
+    const response = await fetch('/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    const data = await response.json();
+    if (response.ok) {
+      localStorage.setItem('token', data.token);
+      navigate('/chat');
+    } else {
+      alert(data.message);
+    }
   };
 
   return (
