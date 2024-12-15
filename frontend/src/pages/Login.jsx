@@ -17,10 +17,13 @@ const Login = () => {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form),
     });
+
     const data = await response.json();
+
     if (response.ok) {
       localStorage.setItem('token', data.token);
-      navigate('/chat');
+      localStorage.setItem('username', data.username);
+      navigate('/');
     } else {
       alert(data.message);
     }

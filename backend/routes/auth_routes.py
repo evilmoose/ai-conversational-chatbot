@@ -1,17 +1,16 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify # type: ignore
 from dotenv import load_dotenv
 import os
-import jwt
 import datetime
 from utils.db_utils import connect_db
-import bcrypt
+import bcrypt # type: ignore
+import jwt # type: ignore
+print(jwt.__file__)
 
 # Load environment variables
 load_dotenv()
 
 auth_routes = Blueprint('auth_routes', __name__)
-SECRET_KEY = os.getenv('SECRET_KEY')
-
 
 @auth_routes.route('/login', methods=['POST'])
 def login():
@@ -29,12 +28,13 @@ def login():
 
     if user and bcrypt.checkpw(password.encode('utf-8'), user['password_hash'].encode('utf-8')):
         token = jwt.encode({
-            'username': username, 
-            'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)}, 
-            SECRET_KEY, algorithm='HS256')
-        
-        return jsonify({"token": token})
+            'username': username}, 
+            os.getenv('SECRET_KEY', 'sercret_key'), 
+            algorithm='HS256')
+            
+        return jsonify({"token": token, "username": username})
     else:
+        print("Invalid credentials - 401")
         return jsonify({"error": "Invalid credentials"}), 401
 
 @auth_routes.route('/register', methods=['POST'])
