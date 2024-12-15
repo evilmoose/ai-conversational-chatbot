@@ -39,6 +39,7 @@ def chat_route():
             messages.append({'role': 'user', 'content': user_input})
             response_stream = chat(model, messages=messages, stream=True)
 
+            buffer = ""
             for chunk in response_stream:
                 print(f"DEBUG: Chunk received: {chunk}")  # Debugging output
 
@@ -46,11 +47,18 @@ def chat_route():
                 message = chunk.get("message")
                 
                 if message and "content" in message:
-                    yield f"{message['content']}\n\n"
+                    buffer += message['content']
+                    while '.' in buffer:
+                        sentence, buffer = buffer.split('.', 1)
+                        yield f"{sentence.strip()}.\n\n"
                 else:
                     print(f"WARNING: Missing 'content' key in chunk: {chunk}")
                     yield f"data: {json.dumps({'error': 'Invalid chunk format'})}\n\n"
 
+            if buffer:
+                yield f"{buffer.strip()}\n\n"
+                
+        # Return a stream of responses      
         return Response(generate_response_stream(), content_type='text/event-stream')
 
     except Exception as e:
