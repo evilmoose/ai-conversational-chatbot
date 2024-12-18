@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 import os
 import jwt
 
+print(os.getenv('HF_HUB_DISABLE_SYMLINKS_WARNING'))
+
 app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
 CORS(app)
 

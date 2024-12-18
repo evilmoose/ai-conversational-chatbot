@@ -10,6 +10,7 @@ This project demonstrates a scalable application integrating Flask, React, Redux
   - [](#)
   - [Table of Contents](#table-of-contents)
   - [File Structure](#file-structure)
+  - [Features](#features)
   - [Setup Instructions](#setup-instructions)
     - [Backend Setup](#backend-setup)
     - [Frontend Setup](#frontend-setup)
@@ -55,6 +56,21 @@ project/
 |-- .env
 |-- requirements.txt
 ```
+
+---
+
+## Features
+
+- **User Authentication**: Secure user registration and login using JWT.
+- **Chat Functionality**: Real-time chat interface with message history.
+- **3D Visualization**: Integration with Three.js for 3D graphics.
+- **State Management**: Efficient state management using Redux.
+- **Database Integration**: PostgreSQL for data storage and retrieval.
+- **Responsive Design**: Mobile-friendly UI with responsive design.
+- **Environment Configuration**: Use of `.env` files for managing environment variables.
+- **Proxy API Requests**: Vite configuration to proxy API requests to the Flask backend.
+- **Text-to-Speech**: Convert text messages to speech using a text-to-speech API.
+- **Markdown Formatting**: Use `react-markdown` to format chat messages.
 
 ---
 

@@ -55,6 +55,20 @@ const ChatContainer = () => {
         return updatedMessages;
       });
     }
+
+    // Send the bot's response for TTS and play audio
+    fetch("http://127.0.0.1:5000/api/text-to-speech", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: botResponse }),
+    })
+    .then((res) => res.blob())
+    .then((blob) => {
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audio.play();
+    })
+    .catch((err) => console.error("TTS Error:", err));
   
     setIsStreaming(false);
     setUserInput("");
@@ -64,7 +78,8 @@ const ChatContainer = () => {
     <div id="chat-container" className="d-flex flex-column border bg-white p-3">
       <div id="chat-display" className="flex-grow-1 overflow-auto mb-2">
         {messages.map((msg, index) => (
-          <div key={index}>
+          <div 
+            key={index}>
             <strong>{msg.role === "user" ? `${msg.name}: ` : "Rebecca: "}</strong>
             {msg.role === "assistant" ? (
         <ReactMarkdown className="markdown">{msg.content}</ReactMarkdown>

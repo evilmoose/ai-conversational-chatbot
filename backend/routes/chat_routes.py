@@ -1,14 +1,39 @@
-from flask import Flask, Blueprint, request, jsonify, stream_with_context, Response # type: ignore
-from flask_cors import CORS # type: ignore
+from flask import Flask, Blueprint, request, jsonify, stream_with_context, Response, send_file
+from flask_cors import CORS
 from utils.db_utils import fetch_user_conversations, store_conversations, fetch_one
+from parler_tts import ParlerTTSForConditionalGeneration
+from transformers import AutoTokenizer, set_seed
 from dotenv import load_dotenv
-from ollama import chat # type: ignore
+from ollama import chat 
+import torch
+import soundfile as sf
 import json
-import jwt # type: ignore
+import jwt 
 import os
+import io
 
 chat_routes = Blueprint('chat_routes', __name__)
 CORS(chat_routes)
+
+# Load Parler-TTS model and tokenizer
+device = "cuda" if torch.cuda.is_available() else "cpu"
+print(f"DEBUG: Device '{device}' being used for TTS...")
+
+model = ParlerTTSForConditionalGeneration.from_pretrained(
+    "parler-tts/parler-tts-mini-expresso",
+    torch_dtype=torch.float32).to(device)
+print(f"DEBUG: Model '{model}' loaded successfully...")
+
+model = torch.compile(model)
+print("DEBUG: Model compiled for faster float32 inference.")
+
+tokenizer = AutoTokenizer.from_pretrained(
+    "parler-tts/parler-tts-mini-expresso",
+    use_fast=True)
+print(f"DEBUG: Tokenizer '{tokenizer}' loaded successfully...")
+
+
+print(f"DEBUG: Model '{model}' loaded successfully....")
 
 # Define Rebecca's persona and conversational guidelines
 REBECCA_PERSONA_PROMPT = """
@@ -107,6 +132,53 @@ def chat_route():
         
         # Return a stream of responses      
         return Response(generate_response_stream(), content_type='text/event-stream')
+
+    except Exception as e:
+        print(f"ERROR: {e}")
+        return jsonify({"error": str(e)}), 500
+    
+@chat_routes.route('/text-to-speech', methods=['POST'])
+def text_to_speech():
+    try:
+        # Parse incoming text
+        data = request.get_json()
+        text = data.get("text", "")
+
+        if not text:
+            return jsonify({f"DEBUG: No text provided..."}), 400
+        
+        description = "Laura's voice is soft, warm, friendly, and slightly fast delivery, with normal quaity audio and a very close recording that almost has no background noise"
+        print(f"DEBUG: Text to convert to speech: {text}")
+        # Tokenize inputs explicitly with attention_mask
+        description_tokens = tokenizer(
+            description, return_tensors="pt", padding=True, truncation=False).to(device)
+
+        text_tokens = tokenizer(
+            text, return_tensors="pt", padding=True, truncation=False).to(device)
+
+        set_seed(42)
+        torch.manual_seed(42)
+
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed(42)
+            torch.cuda.manual_seed_all(42)
+            torch.backends.cudnn.deterministic = True
+            torch.backends.cudnn.benchmark = False
+
+        generation = model.generate(
+            input_ids=description_tokens['input_ids'],
+            attention_mask=description_tokens['attention_mask'],
+            prompt_input_ids=text_tokens['input_ids'],
+            prompt_attention_mask=text_tokens['attention_mask'],
+        )
+
+        # Convert generated output to audio
+        audio_arr = generation.cpu().numpy().squeeze()
+        buffer = io.BytesIO()
+        sf.write(buffer, audio_arr, model.config.sampling_rate, format="WAV")
+        buffer.seek(0)
+
+        return send_file(buffer, mimetype="audio/wav", as_attachment=False)
 
     except Exception as e:
         print(f"ERROR: {e}")
