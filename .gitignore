@@ -28,5 +28,6 @@
 
 /backend/.venv
 /backend/.env
+/backend/test_script.py
 
 /ignore

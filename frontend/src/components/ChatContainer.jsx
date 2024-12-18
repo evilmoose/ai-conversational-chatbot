@@ -1,15 +1,18 @@
 // eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
+import ReactMarkdown from 'react-markdown';
 
 const ChatContainer = () => {
   const [messages, setMessages] = useState([]); // Chat history
   const [userInput, setUserInput] = useState(""); // User input
   const [isStreaming, setIsStreaming] = useState(false); // Streaming state
-  const username = localStorage.getItem('username');
+
+  // Retrieve username from localStorage
+  const username = localStorage.getItem('username') || 'User';
   const token = localStorage.getItem('token');
 
   const handleSendMessage = async () => {
-    setMessages((prev) => [...prev, { role: username, content: userInput }]);
+    setMessages((prev) => [...prev, { role: 'user', content: userInput, name: username }]);
     setIsStreaming(true);
   
     const response = await fetch("http://127.0.0.1:5000/api/chat", {
@@ -47,7 +50,7 @@ const ChatContainer = () => {
         ) {
           updatedMessages[updatedMessages.length - 1].content = botResponse;
         } else {
-          updatedMessages.push({ role: "assistant", content: botResponse });
+          updatedMessages.push({ role: "assistant", content: botResponse, name: "Rebecca" });
         }
         return updatedMessages;
       });
@@ -60,9 +63,14 @@ const ChatContainer = () => {
   return (
     <div id="chat-container" className="d-flex flex-column border bg-white p-3">
       <div id="chat-display" className="flex-grow-1 overflow-auto mb-2">
-      {messages.map((msg, index) => (
+        {messages.map((msg, index) => (
           <div key={index}>
-            <strong>{msg.role}:</strong> {msg.content}
+            <strong>{msg.role === "user" ? `${msg.name}: ` : "Rebecca: "}</strong>
+            {msg.role === "assistant" ? (
+        <ReactMarkdown className="markdown">{msg.content}</ReactMarkdown>
+      ) : (
+        <span><p>{msg.role === "user" ? `${msg.content}` : ""} </p></span>
+      )}
           </div>
         ))}
       </div>
