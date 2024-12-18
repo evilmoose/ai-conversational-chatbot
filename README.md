@@ -69,7 +69,7 @@ project/
 - **Responsive Design**: Mobile-friendly UI with responsive design.
 - **Environment Configuration**: Use of `.env` files for managing environment variables.
 - **Proxy API Requests**: Vite configuration to proxy API requests to the Flask backend.
-- **Text-to-Speech**: Convert text messages to speech using a text-to-speech API.
+- **Text-to-Speech**: Convert text messages to speech using a text-to-speech API with Parler-TTS.
 - **Markdown Formatting**: Use `react-markdown` to format chat messages.
 
 ---
