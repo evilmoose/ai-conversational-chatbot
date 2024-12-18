@@ -38,23 +38,18 @@ project/
 |   |-- utils/
 |   |   |-- __init__.py
 |   |   |-- db_utils.py
+|   |-- data/
+|   |   |-- rebecca_dataset.json
+|   |-- requirements.txt
 |-- frontend/
 |   |-- public/
 |   |-- src/
 |   |   |-- components/
 |   |   |   |-- Header.jsx
 |   |   |   |-- Sidebar.jsx
-|   |   |   |-- ThreeJSContainer.jsx
 |   |   |   |-- ChatContainer.jsx
-|   |   |-- store/
-|   |   |   |-- chatSlice.js
-|   |   |   |-- index.js
-|   |   |-- App.js
-|   |   |-- main.js
-|   |   |-- pages/
-|   |   |   |-- Register.jsx
-|   |   |   |-- Login.jsx
-|   |   |   |-- Home.jsx
+|   |   |-- App.jsx
+|   |   |-- index.css
 |   |-- package.json
 |   |-- vite.config.js
 |-- .env
@@ -101,23 +96,32 @@ project/
 1. **Serve Static React App**: Update `app.py` to serve React's static files and API routes:
 
    ```python
-   from flask import Flask, send_from_directory
+   from flask import Flask, send_from_directory, request, jsonify
    from routes.auth_routes import auth_routes
    from routes.chat_routes import chat_routes
    from flask_cors import CORS
+   from utils.db_utils import connect_db
+   from dotenv import load_dotenv
+   import os
+   import jwt
 
    app = Flask(__name__, static_folder='../frontend/dist', static_url_path='')
    CORS(app)
 
+   load_dotenv()
+
+   # JWT secret key
+   app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your_secret_key')
+
    # Register blueprints
    app.register_blueprint(auth_routes, url_prefix='/auth')
-   app.register_blueprint(chat_routes, url_prefix='/chat')
+   app.register_blueprint(chat_routes, url_prefix='/api')
 
    # Serve React static files
    @app.route('/')
    @app.route('/<path:path>')
    def serve_react_app(path=''):
-       if path and (app.static_folder / path).exists():
+       if path and os.path.exists(os.path.join(app.static_folder, path)):
            return send_from_directory(app.static_folder, path)
        return send_from_directory(app.static_folder, 'index.html')
 
@@ -127,7 +131,7 @@ project/
 
 2. **API Endpoints**:
    - Auth routes: `/auth/login`, `/auth/register`
-   - Chat routes: `/chat/conversations`, `/chat/add`
+   - Chat routes: `/api/chat`
 
 3. **Database Utilities**: Utilize `db_utils.py` for PostgreSQL queries.
 
@@ -136,30 +140,38 @@ project/
 ## Frontend Configuration
 
 1. **React Router**:
-   Ensure routing is configured in `src/App.js`:
+   Ensure routing is configured in `src/App.jsx`:
 
    ```javascript
    import React from 'react';
-   import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+   import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
    import Register from './pages/Register';
    import Login from './pages/Login';
+   import Chat from './pages/Chat';
    import Home from './pages/Home';
+   import './App.css';
+   import './bootstrap.css';
 
-   const App = () => (
-     <Router>
-       <Routes>
-         <Route path="/" element={<Home />} />
-         <Route path="/register" element={<Register />} />
-         <Route path="/login" element={<Login />} />
-       </Routes>
-     </Router>
-   );
+   const App = () => {
+     const isAuthenticated = !!localStorage.getItem('token');
+
+     return (
+       <Router>
+         <Routes>
+           <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
+           <Route path="/register" element={<Register />} />
+           <Route path="/login" element={<Login />} />
+           <Route path="/chat" element={isAuthenticated ? <Chat /> : <Navigate to="/login" />} />
+         </Routes>
+       </Router>
+     );
+   };
 
    export default App;
    ```
 
 2. **Components**:
-   - Split `index.html` into reusable React components (e.g., `Header`, `Sidebar`, etc.).
+   - Split `index.html` into reusable React components (e.g., `Header`, `Sidebar`, `ChatContainer`).
 
 3. **Redux Store**:
    Use Redux Toolkit to manage the global state (`store/chatSlice.js`).
@@ -183,7 +195,7 @@ project/
      server: {
        proxy: {
          '/auth': 'http://127.0.0.1:5000',
-         '/chat': 'http://127.0.0.1:5000',
+         '/api': 'http://127.0.0.1:5000',
        },
      },
    });
